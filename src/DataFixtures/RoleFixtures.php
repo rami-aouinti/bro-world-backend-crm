@@ -63,7 +63,6 @@ class RoleFixtures extends Fixture
                 'SEARCH',
                 'CALENDAR',
             ],
-            'Language' => [],
         ];
 
         $actions = [
