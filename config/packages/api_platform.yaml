@@ -1,14 +1,32 @@
 api_platform:
-    title: Bro World CRM
-    version: v3.0.1
-    collection:
-        pagination:
-            client_items_per_page: true
-            client_enabled: true
+  title: Bro World CRM
+  version: v3.0.1
 
-    mapping:
-        paths: ['%kernel.project_dir%/src/Entity']
-    patch_formats:
-        json: ['application/merge-patch+json']
-    swagger:
-        versions: [3]
+  # ✅ Nouveau bloc pour la pagination en v3/v4
+  defaults:
+    # Le client peut activer/désactiver la pagination (param ?pagination=true/false)
+    pagination_client_enabled: true
+
+    # Le client peut choisir le nombre d’items par page (?itemsPerPage=50)
+    pagination_client_items_per_page: true
+
+    # (optionnel) valeur par défaut
+    # pagination_items_per_page: 30
+
+  collection:
+    pagination:
+      # facultatif, tu peux les laisser tomber si tu gardes les valeurs par défaut
+      enabled_parameter_name: pagination
+      items_per_page_parameter_name: itemsPerPage
+      page_parameter_name: page
+      partial_parameter_name: partial
+
+  mapping:
+    paths:
+      - '%kernel.project_dir%/src/Entity'
+
+  patch_formats:
+    json: ['application/merge-patch+json']
+
+  swagger:
+    versions: [3]
