@@ -28,7 +28,7 @@
     "php": "^8.3.0",
     "ext-ctype": "*",
     "ext-iconv": "*",
-    "api-platform/core": "^4.2",
+    "api-platform/core": "^4.1.19",
     "bro-world/core-bundle": "^0.1.7",
     "doctrine/annotations": "^1.13",
     "doctrine/doctrine-bundle": "^2.18.1",
