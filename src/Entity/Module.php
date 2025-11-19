@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\ModuleRepository;
 use App\Traits\Blameable;
 use App\Traits\IsActive;
@@ -18,42 +23,48 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_MODULE_LIST')"],
-        'post' => ['security' => "is_granted('ROLE_MODULE_CREATE')"],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_MODULE_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_MODULE_CREATE')"
+        ),
+        new Get(
+            security: "is_granted('ROLE_MODULE_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_MODULE_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_MODULE_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_MODULE_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_MODULE_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_MODULE_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["module_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["module_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['module_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['module_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
 #[ApiFilter(
     DateFilter::class,
     properties: [
-        "createdAt",
-        "updatedAt",
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "ipartial",
+        'id' => 'exact',
+        'name' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: ModuleRepository::class)]
@@ -67,17 +78,17 @@ class Module
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "module_read",
-        "group_read"
+        'module_read',
+        'group_read',
     ])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Groups([
-        "module_read",
-        "module_write",
-        "group_read"
+        'module_read',
+        'module_write',
+        'group_read',
     ])]
     private string $name;
 
@@ -85,7 +96,7 @@ class Module
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Assert\NotBlank]
     #[Groups([
-        "module_read"
+        'module_read',
     ])]
     private Collection $roles;
 
@@ -130,7 +141,7 @@ class Module
     {
         if ($this->roles->contains($role)) {
             $this->roles->removeElement($role);
-            // set the owning side to null (unless already changed)
+
             if ($role->getModule() === $this) {
                 $role->setModule(null);
             }

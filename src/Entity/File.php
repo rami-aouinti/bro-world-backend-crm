@@ -2,8 +2,13 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Controller\CreateFileAction;
 use App\Traits\Blameable;
 use App\Traits\IsActive;
@@ -16,27 +21,31 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[Vich\Uploadable]
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_FILE_LIST')"],
-        'post' => [
-            'security' => "is_granted('ROLE_FILE_CREATE')",
-            'method' => 'POST',
-            'path' => '/files',
-            'controller' => CreateFileAction::class,
-            'defaults' => ['_api_receive' => false]
-        ],
+    types: ['https://schema.org/MediaObject'],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_FILE_LIST')"
+        ),
+        new Post(
+            uriTemplate: '/files',
+            controller: CreateFileAction::class,
+            security: "is_granted('ROLE_FILE_CREATE')",
+            read: false,
+            deserialize: false
+        ),
+        new Get(
+            security: "is_granted('ROLE_FILE_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_FILE_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_FILE_DELETE')"
+        ),
     ],
-    iri: 'https://schema.org/MediaObject',
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_FILE_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_FILE_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_FILE_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["file_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["file_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['file_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['file_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
 #[ORM\Entity]
 class File
@@ -49,9 +58,9 @@ class File
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "document_read",
-        "document_write",
-        "project_read",
+        'document_read',
+        'document_write',
+        'project_read',
     ])]
     private ?int $id = null;
 
@@ -65,33 +74,33 @@ class File
     #[Assert\NotNull]
     public ?HttpFile $file = null;
 
-    #[ApiProperty(iri: 'http://schema.org/contentUrl')]
+    #[ApiProperty(types: ['http://schema.org/contentUrl'])]
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "document_read",
-        "document_write",
-        "project_read",
+        'document_read',
+        'document_write',
+        'project_read',
     ])]
     public ?string $contentUrl = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "document_read",
-        "project_read",
+        'document_read',
+        'project_read',
     ])]
     protected ?string $size = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "document_read",
-        "project_read",
+        'document_read',
+        'project_read',
     ])]
     protected ?string $mimeType = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "document_read",
-        "project_read",
+        'document_read',
+        'project_read',
     ])]
     protected ?string $originalName = null;
 

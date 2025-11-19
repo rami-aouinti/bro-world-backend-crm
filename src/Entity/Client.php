@@ -2,12 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiSubresource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Controller\Client\ClientGetItemAction;
 use App\Controller\Client\ClientLoginByTokenCollectionAction;
 use App\Controller\Client\ClientPutItemController;
@@ -27,90 +31,90 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+
 use function bin2hex;
 use function random_bytes;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'normalization_context' => ['groups' => ["client_read_collection", "read", "is_active_read"]],
-            'security' => "is_granted('ROLE_CLIENT_LIST')"
-        ],
-        'post' => ['security' => "is_granted('ROLE_CLIENT_CREATE')"],
-        'signup' => [
-            'method' => 'POST',
-            'path' => '/frontend/signup',
-            'denormalization_context' => ['groups' => ["signup_collection"]],
-            'controller' => ClientSignupPostCollectionController::class,
-            'validation_groups' => ['client_signup_frontend'],
-            'defaults' => ['_api_receive' => true]
-        ],
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['client_read_collection', 'read', 'is_active_read']],
+            security: "is_granted('ROLE_CLIENT_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_CLIENT_CREATE')"
+        ),
+        new Post(
+            uriTemplate: '/frontend/signup',
+            controller: ClientSignupPostCollectionController::class,
+            denormalizationContext: ['groups' => ['signup_collection']],
+            validationContext: ['groups' => ['client_signup_frontend']],
+            name: 'client_signup'
+        ),
+        new Get(
+            security: "is_granted('ROLE_CLIENT_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_CLIENT_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_CLIENT_DELETE')"
+        ),
+        new Get(
+            uriTemplate: '/frontend/profile/me',
+            controller: ClientGetItemAction::class,
+            normalizationContext: ['groups' => ['client_get_item']],
+            security: "is_granted('ROLE_CLIENT')",
+            read: false,
+            deserialize: false,
+            name: 'client_me_get'
+        ),
+        new Put(
+            uriTemplate: '/frontend/profile/me',
+            controller: ClientPutItemController::class,
+            normalizationContext: ['groups' => ['client_put_item']],
+            security: "is_granted('ROLE_CLIENT')",
+            validationContext: ['groups' => ['client_put_frontend']],
+            name: 'client_me_put'
+        ),
+        new Get(
+            uriTemplate: '/frontend/login/{token}',
+            controller: ClientLoginByTokenCollectionAction::class,
+            read: false,
+            deserialize: false,
+            name: 'client_login_by_token'
+        ),
+        new Post(
+            uriTemplate: '/frontend/remind/password',
+            controller: ClientRemindPasswordCollectionController::class,
+            read: false,
+            deserialize: false,
+            name: 'client_remind_password'
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_CLIENT_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_CLIENT_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_CLIENT_DELETE')"],
-        'clientGet' => [
-            'security' => "is_granted('ROLE_CLIENT')",
-            'method' => 'GET',
-            'path' => '/frontend/profile/me',
-            'normalization_context' => ['groups' => ["client_get_item"]],
-            'controller' => ClientGetItemAction::class,
-            'defaults' => ['_api_receive' => false]
-        ],
-        'clientPut' => [
-            'security' => "is_granted('ROLE_CLIENT')",
-            'method' => 'PUT',
-            'path' => '/frontend/profile/me',
-            'normalization_context' => ['groups' => ["client_put_item"]],
-            'controller' => ClientPutItemController::class,
-            'validation_groups' => ['client_put_frontend'],
-            'defaults' => ['_api_receive' => true]
-        ],
-        'loginByToken' => [
-            'method' => 'GET',
-            'path' => '/frontend/login/{token}',
-            'controller' => ClientLoginByTokenCollectionAction::class,
-            'defaults' => ['_api_receive' => false]
-        ],
-        'remindPassword' => [
-            'method' => 'POST',
-            'path' => '/frontend/remind/password',
-            'controller' => ClientRemindPasswordCollectionController::class,
-            'defaults' => ['_api_receive' => false]
-        ],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["client_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["client_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['client_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['client_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
-#[ApiFilter(
-    DateFilter::class,
-    properties: [
-        "createdAt",
-        "updatedAt",
-    ]
-)]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "ipartial",
-        "labels.id" => "exact",
-        "contacts.value" => "ipartial",
-        "description" => "ipartial"
+        'id' => 'exact',
+        'name' => 'ipartial',
+        'labels.id' => 'exact',
+        'contacts.value' => 'ipartial',
+        'description' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "description",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'description',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[UniqueEntity(fields: ['username'], message: 'User already exists', errorPath: 'username')]
@@ -125,21 +129,21 @@ class Client implements ClientInterface, UserInterface, PasswordAuthenticatedUse
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "client_read",
-        "client_read_collection",
-        "document_read",
-        "project_read",
-        "document_write",
-        "project_write",
-        "task_read",
-        "contact_read",
-        "contact_write",
-        "order_header_read",
-        "order_header_read_collection",
-        "order_header_write",
-        "address_read",
-        "address_write",
-        "client_get_item"
+        'client_read',
+        'client_read_collection',
+        'document_read',
+        'project_read',
+        'document_write',
+        'project_write',
+        'task_read',
+        'contact_read',
+        'contact_write',
+        'order_header_read',
+        'order_header_read_collection',
+        'order_header_write',
+        'address_read',
+        'address_write',
+        'client_get_item',
     ])]
     private ?int $id = null;
 
@@ -148,77 +152,73 @@ class Client implements ClientInterface, UserInterface, PasswordAuthenticatedUse
         groups: [
             'Default',
             'client_signup_frontend',
-            'client_put_frontend'
+            'client_put_frontend',
         ]
     )]
     #[Groups([
-        "client_read",
-        "client_read_collection",
-        "client_write",
-        "document_read",
-        "project_read",
-        "document_write",
-        "task_read",
-        "contact_read",
-        "order_header_read",
-        "order_header_read_collection",
-        "client_get_item",
-        "client_put_item",
-        "signup_collection",
-        "address_read",
+        'client_read',
+        'client_read_collection',
+        'client_write',
+        'document_read',
+        'project_read',
+        'document_write',
+        'task_read',
+        'contact_read',
+        'order_header_read',
+        'order_header_read_collection',
+        'client_get_item',
+        'client_put_item',
+        'signup_collection',
+        'address_read',
     ])]
     private string $name;
 
-    #[ApiSubresource]
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Address::class)]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Assert\Valid]
     #[Groups([
-        "client_read",
-        "client_write"
+        'client_read',
+        'client_write',
     ])]
     private Collection $addresses;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups([
-        "client_read",
-        "client_read_collection",
-        "client_write"
+        'client_read',
+        'client_read_collection',
+        'client_write',
     ])]
     private ?string $description = null;
 
     #[ORM\ManyToMany(targetEntity: Label::class)]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Groups([
-        "client_read",
-        "client_read_collection",
-        "client_write"
+        'client_read',
+        'client_read_collection',
+        'client_write',
     ])]
     private Collection $labels;
 
-    #[ApiSubresource]
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Contact::class)]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Assert\Valid]
     #[Groups([
-        "client_read",
-        "client_read_collection",
-        "client_write"
+        'client_read',
+        'client_read_collection',
+        'client_write',
     ])]
     private Collection $contacts;
 
-    #[ApiSubresource]
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Project::class, cascade: ['persist'], orphanRemoval: true)]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Assert\Valid]
     #[Groups([
-        "document_read",
-        "client_read",
-        "client_write"
+        'document_read',
+        'client_read',
+        'client_write',
     ])]
     private Collection $projects;
 
-    #[ApiSubresource]
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Document::class, orphanRemoval: true)]
     #[ORM\OrderBy(['id' => 'DESC'])]
     private Collection $documents;
@@ -228,22 +228,22 @@ class Client implements ClientInterface, UserInterface, PasswordAuthenticatedUse
         groups: [
             'Default',
             'client_signup_frontend',
-            'client_put_frontend'
+            'client_put_frontend',
         ]
     )]
     #[Assert\Email(
         groups: [
             'Default',
             'client_signup_frontend',
-            'client_put_frontend'
+            'client_put_frontend',
         ]
     )]
     #[Groups([
-        "client_read",
-        "client_write",
-        "client_get_item",
-        "client_put_item",
-        "signup_collection",
+        'client_read',
+        'client_write',
+        'client_get_item',
+        'client_put_item',
+        'signup_collection',
     ])]
     private string $username;
 
@@ -252,12 +252,12 @@ class Client implements ClientInterface, UserInterface, PasswordAuthenticatedUse
 
     #[Assert\NotBlank(
         groups: [
-            'client_signup_frontend'
+            'client_signup_frontend',
         ]
     )]
     #[Groups([
-        "client_write",
-        "signup_collection",
+        'client_write',
+        'signup_collection',
     ])]
     private ?string $plainPassword = null;
 
@@ -376,7 +376,6 @@ class Client implements ClientInterface, UserInterface, PasswordAuthenticatedUse
     {
         if ($this->projects->contains($project)) {
             $this->projects->removeElement($project);
-            // set the owning side to null (unless already changed)
             if ($project->getClient() === $this) {
                 $project->setClient(null);
             }
@@ -505,6 +504,6 @@ class Client implements ClientInterface, UserInterface, PasswordAuthenticatedUse
 
     public function getUserIdentifier(): string
     {
-        return (string)$this->getId();
+        return (string) $this->getId();
     }
 }

@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiProperty;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiSubresource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\DocumentRepository;
 use App\Traits\Blameable;
 use App\Traits\IsActive;
@@ -20,44 +24,44 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_DOCUMENT_LIST')"],
-        'post' => ['security' => "is_granted('ROLE_DOCUMENT_CREATE')"],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_DOCUMENT_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_DOCUMENT_CREATE')"
+        ),
+        new Get(
+            security: "is_granted('ROLE_DOCUMENT_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_DOCUMENT_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_DOCUMENT_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_DOCUMENT_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_DOCUMENT_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_DOCUMENT_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["document_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["document_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['document_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['document_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
-#[ApiFilter(
-    DateFilter::class,
-    properties: [
-        "createdAt",
-        "updatedAt",
-    ]
-)]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "partial",
-        "client" => "partial"
+        'id' => 'exact',
+        'name' => 'partial',
+        'client' => 'partial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "client",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'client',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: DocumentRepository::class)]
@@ -71,47 +75,46 @@ class Document
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "document_read",
-        "project_read",
-        "invoice_header_read",
-        "invoice_header_write",
-        "invoice_header_read",
+        'document_read',
+        'project_read',
+        'invoice_header_read',
+        'invoice_header_write',
+        'invoice_header_read',
     ])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Groups([
-        "document_read",
-        "document_write",
-        "project_read",
-        "invoice_header_read",
+        'document_read',
+        'document_write',
+        'project_read',
+        'invoice_header_read',
     ])]
     private string $name;
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'documents')]
     #[Groups([
-        "document_read",
-        "document_write",
+        'document_read',
+        'document_write',
     ])]
     private ?Client $client = null;
 
     #[ORM\ManyToMany(targetEntity: Project::class, mappedBy: 'documents')]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Groups([
-        "document_read",
-        "document_write",
+        'document_read',
+        'document_write',
     ])]
     private Collection $projects;
 
-    #[ApiProperty(iri: 'http://schema.org/image')]
-    #[ApiSubresource]
+    #[ApiProperty(types: ['http://schema.org/image'])]
     #[ORM\ManyToMany(targetEntity: File::class)]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Groups([
-        "document_read",
-        "document_write",
-        "project_read"
+        'document_read',
+        'document_write',
+        'project_read',
     ])]
     public Collection $files;
 

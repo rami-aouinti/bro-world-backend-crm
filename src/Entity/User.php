@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Controller\DashboardAction;
 use App\Controller\User\UserPostCollectionController;
 use App\Controller\User\UserPutItemController;
@@ -16,7 +21,6 @@ use App\Traits\IsActive;
 use App\Traits\Timestampable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -25,62 +29,61 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'security' => "is_granted('ROLE_USER_LIST')",
-            'normalization_context' => ['groups' => ["user_read_collection", "read", "is_active_read"]],
-        ],
-        'post' => [
-            'controller' => UserPostCollectionController::class,
-            'security' => "is_granted('ROLE_USER_CREATE')"
-        ],
-        'dashboard' => [
-            'security' => "is_granted('ROLE_USER_DASHBOARD')",
-            'method' => 'GET',
-            'path' => '/users/dashboard',
-            'controller' => DashboardAction::class,
-            'defaults' => ['_api_receive' => false]
-        ],
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['user_read_collection', 'read', 'is_active_read']],
+            security: "is_granted('ROLE_USER_LIST')"
+        ),
+        new Post(
+            controller: UserPostCollectionController::class,
+            security: "is_granted('ROLE_USER_CREATE')"
+        ),
+        new GetCollection(
+            uriTemplate: '/users/dashboard',
+            controller: DashboardAction::class,
+            security: "is_granted('ROLE_USER_DASHBOARD')",
+            name: 'user_dashboard'
+        ),
+        new Get(
+            security: "is_granted('ROLE_USER_SHOW')"
+        ),
+        new Put(
+            controller: UserPutItemController::class,
+            security: "is_granted('ROLE_USER_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_USER_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_USER_SHOW')"],
-        'put' => [
-            'controller' => UserPutItemController::class,
-            'security' => "is_granted('ROLE_USER_UPDATE')"
-        ],
-        'delete' => ['security' => "is_granted('ROLE_USER_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["user_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["user_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['user_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['user_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
 #[ApiFilter(
     DateFilter::class,
     properties: [
-        "createdAt",
-        "updatedAt",
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "ipartial",
-        "email" => "ipartial",
-        "groups.name" => "ipartial"
+        'id' => 'exact',
+        'name' => 'ipartial',
+        'email' => 'ipartial',
+        'groups.name' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "email",
-        "groups.name",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'email',
+        'groups.name',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[UniqueEntity(fields: ['username'])]
@@ -96,12 +99,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "user_read",
-        "user_read_collection",
-        "task_read",
-        "client_read",
-        "project_read",
-        "task_write",
+        'user_read',
+        'user_read_collection',
+        'task_read',
+        'client_read',
+        'project_read',
+        'task_write',
     ])]
     private ?int $id = null;
 
@@ -109,10 +112,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank]
     #[Assert\Email]
     #[Groups([
-        "user_read",
-        "user_write",
-        "task_read",
-        "client_read",
+        'user_read',
+        'user_write',
+        'task_read',
+        'client_read',
     ])]
     private string $username;
 
@@ -121,30 +124,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[Groups([
-        "user_write",
+        'user_write',
     ])]
     private ?string $plainPassword = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Groups([
-        "user_read",
-        "user_read_collection",
-        "user_write",
-        "task_read",
-        "client_read",
-        "project_read",
+        'user_read',
+        'user_read_collection',
+        'user_write',
+        'task_read',
+        'client_read',
+        'project_read',
     ])]
     private string $name;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Groups([
-        "user_read",
-        "user_read_collection",
-        "user_write",
-        "task_read",
-        "client_read",
+        'user_read',
+        'user_read_collection',
+        'user_write',
+        'task_read',
+        'client_read',
     ])]
     private string $email;
 
@@ -154,18 +157,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToMany(targetEntity: Group::class)]
     #[Groups([
-        "user_read",
-        "user_read_collection",
-        "user_write",
+        'user_read',
+        'user_read_collection',
+        'user_write',
     ])]
     private Collection $groups;
 
     #[ORM\ManyToOne(targetEntity: Language::class)]
     #[Assert\NotNull]
     #[Groups([
-        "user_read",
-        "user_read_collection",
-        "user_write",
+        'user_read',
+        'user_read_collection',
+        'user_write',
     ])]
     private ?Language $language = null;
 
@@ -204,7 +207,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getRoles(): array
     {
-        $roles[] = ['ROLE_USER'];
+        $roles = [['ROLE_USER']];
 
         foreach ($this->getGroups() as $group) {
             $roles[] = $group->getRolesArray();
@@ -219,11 +222,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __serialize(): array
     {
-        return array(
+        return [
             $this->id,
             $this->username,
             $this->password,
-        );
+        ];
     }
 
     public function __unserialize($serialized): void
@@ -305,7 +308,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->tasks->contains($task)) {
             $this->tasks->removeElement($task);
-            // set the owning side to null (unless already changed)
+
             if ($task->getAssignee() === $this) {
                 $task->setAssignee(null);
             }
@@ -411,7 +414,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getUserIdentifier(): string
     {
-        return (string)$this->getId();
+        return (string) $this->getId();
     }
 
     public function isIsGoogleSyncEnabled(): ?bool

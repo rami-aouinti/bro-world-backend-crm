@@ -2,62 +2,70 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
-use App\Repository\DocumentRepository;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\GroupRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use App\Traits\Blameable;
 use App\Traits\IsActive;
 use App\Traits\Timestampable;
-use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'security' => "is_granted('ROLE_GROUP_LIST')",
-            'normalization_context' => ['groups' => ["group_read_collection", "read", "is_active_read"]],
-        ],
-        'post' => ['security' => "is_granted('ROLE_GROUP_CREATE')"],
+    operations: [
+        new GetCollection(
+            normalizationContext: ['groups' => ['group_read_collection', 'read', 'is_active_read']],
+            security: "is_granted('ROLE_GROUP_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_GROUP_CREATE')"
+        ),
+        new Get(
+            security: "is_granted('ROLE_GROUP_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_GROUP_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_GROUP_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_GROUP_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_GROUP_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_GROUP_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["group_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["group_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['group_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['group_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
 #[ApiFilter(
     DateFilter::class,
     properties: [
-        "createdAt",
-        "updatedAt",
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "ipartial",
+        'id' => 'exact',
+        'name' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: GroupRepository::class)]
@@ -72,30 +80,30 @@ class Group
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "group_read",
-        "group_read_collection",
-        "group_write",
-        "user_read",
-        "user_read_collection",
-        "user_write",
+        'group_read',
+        'group_read_collection',
+        'group_write',
+        'user_read',
+        'user_read_collection',
+        'user_write',
     ])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Groups([
-        "group_read",
-        "group_read_collection",
-        "group_write",
-        "user_read",
-        "user_read_collection",
+        'group_read',
+        'group_read_collection',
+        'group_write',
+        'user_read',
+        'user_read_collection',
     ])]
     private string $name;
 
     #[ORM\ManyToMany(targetEntity: Role::class)]
     #[Groups([
-        "group_read",
-        "group_write",
+        'group_read',
+        'group_write',
     ])]
     private Collection $roles;
 

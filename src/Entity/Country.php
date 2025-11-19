@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\CountryRepository;
 use App\Traits\Blameable;
 use App\Traits\IsActive;
@@ -16,42 +21,42 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_COUNTRY_LIST')"],
-        'post' => ['security' => "is_granted('ROLE_COUNTRY_CREATE')"],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_COUNTRY_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_COUNTRY_CREATE')"
+        ),
+        new Get(
+            security: "is_granted('ROLE_COUNTRY_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_COUNTRY_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_COUNTRY_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_COUNTRY_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_COUNTRY_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_COUNTRY_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["country_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["country_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['country_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['country_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
-#[ApiFilter(
-    DateFilter::class,
-    properties: [
-        "createdAt",
-        "updatedAt",
-    ]
-)]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "ipartial",
+        'id' => 'exact',
+        'name' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: CountryRepository::class)]
@@ -65,23 +70,23 @@ class Country
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "country_read",
-        "city_read",
-        "city_write",
-        "address_read",
-        "address_write",
-        "client_read",
+        'country_read',
+        'city_read',
+        'city_write',
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Groups([
-        "country_read",
-        "country_write",
-        "city_read",
-        "address_read",
-        "client_read",
+        'country_read',
+        'country_write',
+        'city_read',
+        'address_read',
+        'client_read',
     ])]
     private string $name;
 

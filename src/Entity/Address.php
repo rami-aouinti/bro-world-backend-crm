@@ -2,74 +2,77 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\AddressRepository;
 use App\Traits\Blameable;
 use App\Traits\IsActive;
 use App\Traits\Timestampable;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_ADDRESS_LIST')"],
-        'post' => ['security' => "is_granted('ROLE_ADDRESS_CREATE')"],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_ADDRESS_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_ADDRESS_CREATE')"
+        ),
+        new Get(
+            security: "is_granted('ROLE_ADDRESS_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_ADDRESS_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADDRESS_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_ADDRESS_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_ADDRESS_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_ADDRESS_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["address_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["address_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['address_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['address_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
-#[ApiFilter(
-    DateFilter::class,
-    properties: [
-        "createdAt",
-        "updatedAt",
-    ]
-)]
+#[ApiFilter(DateFilter::class, properties: ['createdAt', 'updatedAt'])]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "postCode" => "ipartial",
-        "country.name" => "ipartial",
-        "city.name" => "ipartial",
-        "region" => "ipartial",
-        "district" => "ipartial",
-        "street" => "ipartial",
-        "building" => "ipartial",
-        "apartment" => "ipartial",
-        "comment" => "ipartial",
+        'id' => 'exact',
+        'postCode' => 'ipartial',
+        'country.name' => 'ipartial',
+        'city.name' => 'ipartial',
+        'region' => 'ipartial',
+        'district' => 'ipartial',
+        'street' => 'ipartial',
+        'building' => 'ipartial',
+        'apartment' => 'ipartial',
+        'comment' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "postCode",
-        "country.name",
-        "city.name",
-        "region",
-        "district",
-        "street",
-        "building",
-        "apartment",
-        "comment",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'postCode',
+        'country.name',
+        'city.name',
+        'region',
+        'district',
+        'street',
+        'building',
+        'apartment',
+        'comment',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
@@ -83,93 +86,93 @@ class Address
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "address_read",
-        "client_read",
-        "client_write",
+        'address_read',
+        'client_read',
+        'client_write',
     ])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Country::class)]
     #[Assert\NotBlank]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?Country $country = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\NotBlank]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $city = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $region = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $district = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $postCode = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\NotBlank]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $street = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Assert\NotBlank]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $building = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $apartment = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     #[Groups([
-        "address_read",
-        "address_write",
-        "client_read",
+        'address_read',
+        'address_write',
+        'client_read',
     ])]
     private ?string $comment = null;
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'addresses')]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Groups([
-        "address_read",
-        "address_write"
+        'address_read',
+        'address_write',
     ])]
     private Client $client;
 

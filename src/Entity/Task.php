@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Controller\TaskDeadlineAction;
 use App\Interfaces\ClientInterface;
 use App\Repository\TaskRepository;
@@ -14,68 +19,72 @@ use App\Traits\Blameable;
 use App\Traits\IsActive;
 use App\Traits\Timestampable;
 use DateTime;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_TASK_LIST')"],
-        'post' => ['security' => "is_granted('ROLE_TASK_CREATE')"],
-        'deadline' => [
-            'security' => "is_granted('ROLE_TASK_DEADLINE')",
-            'method' => 'GET',
-            'path' => '/tasks/deadline',
-            'controller' => TaskDeadlineAction::class,
-            'defaults' => ['_api_receive' => false],
-            'normalization_context' => ['groups' => ["task_read", "read", "is_active_read"]]
-        ],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_TASK_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_TASK_CREATE')"
+        ),
+        new GetCollection(
+            uriTemplate: '/tasks/deadline',
+            controller: TaskDeadlineAction::class,
+            normalizationContext: ['groups' => ['task_read', 'read', 'is_active_read']],
+            security: "is_granted('ROLE_TASK_DEADLINE')",
+            name: 'task_deadline'
+        ),
+        new Get(
+            security: "is_granted('ROLE_TASK_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_TASK_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_TASK_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_TASK_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_TASK_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_TASK_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["task_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["task_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['task_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['task_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
 #[ApiFilter(
     DateFilter::class,
     properties: [
-        "deadline",
-        "createdAt",
-        "updatedAt",
+        'deadline',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "status.id" => "exact",
-        "project.name" => "ipartial",
-        "project.client.name" => "ipartial",
-        "assignee.name" => "ipartial",
-        "name" => "ipartial"
+        'id' => 'exact',
+        'status.id' => 'exact',
+        'project.name' => 'ipartial',
+        'project.client.name' => 'ipartial',
+        'assignee.name' => 'ipartial',
+        'name' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "status.id",
-        "project.name",
-        "project.client.name",
-        "assignee.name",
-        "name",
-        "timeEstimated",
-        "timeSpent",
-        "deadline",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'status.id',
+        'project.name',
+        'project.client.name',
+        'assignee.name',
+        'name',
+        'timeEstimated',
+        'timeSpent',
+        'deadline',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
@@ -89,30 +98,30 @@ class Task implements ClientInterface
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "task_read",
-        "user_read",
-        "project_read",
-        "project_write",
+        'task_read',
+        'user_read',
+        'project_read',
+        'project_write',
     ])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Groups([
-        "task_read",
-        "task_write",
-        "user_read",
-        "project_read",
-        "project_write",
+        'task_read',
+        'task_write',
+        'user_read',
+        'project_read',
+        'project_write',
     ])]
     private string $name;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups([
-        "task_read",
-        "task_write",
-        "user_read",
-        "project_read",
+        'task_read',
+        'task_write',
+        'user_read',
+        'project_read',
     ])]
     private ?string $description = null;
 
@@ -120,59 +129,59 @@ class Task implements ClientInterface
     #[ORM\JoinColumn(nullable: false)]
     #[Assert\NotBlank]
     #[Groups([
-        "task_read",
-        "task_write",
-        "user_read",
+        'task_read',
+        'task_write',
+        'user_read',
     ])]
     private Project $project;
 
     #[ORM\Column(type: 'date')]
     #[Assert\NotBlank]
     #[Groups([
-        "task_read",
-        "task_write",
-        "user_read",
-        "project_read",
-        "project_write",
+        'task_read',
+        'task_write',
+        'user_read',
+        'project_read',
+        'project_write',
     ])]
     private DateTime $deadline;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tasks')]
     #[Groups([
-        "task_read",
-        "task_write",
-        "project_read",
+        'task_read',
+        'task_write',
+        'project_read',
     ])]
     private ?User $assignee = null;
 
     #[ORM\ManyToOne(targetEntity: TaskStatus::class)]
     #[Assert\NotBlank]
     #[Groups([
-        "task_read",
-        "task_write",
-        "user_read",
-        "project_read",
-        "project_write"
+        'task_read',
+        'task_write',
+        'user_read',
+        'project_read',
+        'project_write',
     ])]
     private ?TaskStatus $status = null;
 
     // Estimated time in minutes
     #[ORM\Column(type: 'float', options: ['default' => 0])]
     #[Groups([
-        "task_read",
-        "task_write",
-        "project_read",
-        "project_write"
+        'task_read',
+        'task_write',
+        'project_read',
+        'project_write',
     ])]
     private float $timeEstimated = 0;
 
     // Spent time in minutes
     #[ORM\Column(type: 'float', options: ['default' => 0])]
     #[Groups([
-        "task_read",
-        "task_write",
-        "project_read",
-        "project_write"
+        'task_read',
+        'task_write',
+        'project_read',
+        'project_write',
     ])]
     private float $timeSpent = 0;
 

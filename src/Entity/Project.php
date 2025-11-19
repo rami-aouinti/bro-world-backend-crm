@@ -2,11 +2,16 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiFilter;
-use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
-use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use App\Interfaces\ClientInterface;
 use App\Repository\ProjectRepository;
 use App\Traits\Blameable;
@@ -14,54 +19,59 @@ use App\Traits\IsActive;
 use App\Traits\Timestampable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
-    collectionOperations: [
-        'get' => ['security' => "is_granted('ROLE_PROJECT_LIST')"],
-        'post' => ['security' => "is_granted('ROLE_PROJECT_CREATE')"],
+    operations: [
+        new GetCollection(
+            security: "is_granted('ROLE_PROJECT_LIST')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_PROJECT_CREATE')"
+        ),
+        new Get(
+            security: "is_granted('ROLE_PROJECT_SHOW')"
+        ),
+        new Put(
+            security: "is_granted('ROLE_PROJECT_UPDATE')"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_PROJECT_DELETE')"
+        ),
     ],
-    itemOperations: [
-        'get' => ['security' => "is_granted('ROLE_PROJECT_SHOW')"],
-        'put' => ['security' => "is_granted('ROLE_PROJECT_UPDATE')"],
-        'delete' => ['security' => "is_granted('ROLE_PROJECT_DELETE')"],
-    ],
-    attributes: [
-        'order' => ['id' => "DESC"],
-        'normalization_context' => ['groups' => ["project_read", "read", "is_active_read"]],
-        'denormalization_context' => ['groups' => ["project_write", "is_active_write"]],
-    ]
+    normalizationContext: ['groups' => ['project_read', 'read', 'is_active_read']],
+    denormalizationContext: ['groups' => ['project_write', 'is_active_write']],
+    order: ['id' => 'DESC']
 )]
 #[ApiFilter(
     DateFilter::class,
     properties: [
-        "createdAt",
-        "updatedAt",
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
-        "id" => "exact",
-        "name" => "ipartial",
-        "status.id" => "exact",
-        "type.id" => "exact",
-        "client.name" => "ipartial"
+        'id' => 'exact',
+        'name' => 'ipartial',
+        'status.id' => 'exact',
+        'type.id' => 'exact',
+        'client.name' => 'ipartial',
     ]
 )]
 #[ApiFilter(
     OrderFilter::class,
     properties: [
-        "id",
-        "name",
-        "status.id",
-        "type.id",
-        "client.name",
-        "createdAt",
-        "updatedAt"
+        'id',
+        'name',
+        'status.id',
+        'type.id',
+        'client.name',
+        'createdAt',
+        'updatedAt',
     ]
 )]
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
@@ -75,67 +85,67 @@ class Project implements ClientInterface
     #[ORM\GeneratedValue]
     #[ORM\Column]
     #[Groups([
-        "project_read",
-        "user_read",
-        "document_read",
-        "document_write",
-        "task_read",
-        "task_write",
-        "client_read",
-        "client_write"
+        'project_read',
+        'user_read',
+        'document_read',
+        'document_write',
+        'task_read',
+        'task_write',
+        'client_read',
+        'client_write',
     ])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank]
     #[Groups([
-        "project_read",
-        "project_write",
-        "user_read",
-        "document_read",
-        "document_write",
-        "task_read",
-        "task_write",
-        "client_read",
-        "client_write"
+        'project_read',
+        'project_write',
+        'user_read',
+        'document_read',
+        'document_write',
+        'task_read',
+        'task_write',
+        'client_read',
+        'client_write',
     ])]
     private string $name;
 
     #[ORM\Column(type: 'text', nullable: true)]
     #[Groups([
-        "project_read",
-        "project_write",
-        "document_read",
+        'project_read',
+        'project_write',
+        'document_read',
     ])]
     private ?string $description = null;
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'projects')]
     #[Assert\NotBlank]
     #[Groups([
-        "project_read",
-        "project_write",
-        "task_read",
+        'project_read',
+        'project_write',
+        'task_read',
     ])]
     private ?Client $client = null;
 
     #[ORM\ManyToOne(targetEntity: ProjectStatus::class)]
     #[Assert\NotBlank]
     #[Groups([
-        "project_read",
-        "project_write",
-        "document_read",
-        "client_read",
-        "client_write",
+        'project_read',
+        'project_write',
+        'document_read',
+        'client_read',
+        'client_write',
     ])]
     private ?ProjectStatus $status = null;
 
     #[ORM\ManyToOne(targetEntity: ProjectType::class)]
     #[Assert\NotBlank]
     #[Groups([
-        "project_read",
-        "project_write",
-        "client_read",
-        "client_write",
+        'project_read',
+        'project_write',
+        'client_read',
+        'client_write',
     ])]
     private ?ProjectType $type = null;
 
@@ -143,15 +153,15 @@ class Project implements ClientInterface
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Assert\Valid]
     #[Groups([
-        "project_read",
-        "project_write",
+        'project_read',
+        'project_write',
     ])]
     private Collection $tasks;
 
     #[ORM\ManyToMany(targetEntity: Document::class, inversedBy: 'projects')]
     #[ORM\OrderBy(['id' => 'DESC'])]
     #[Groups([
-        "project_read"
+        'project_read',
     ])]
     private Collection $documents;
 
@@ -233,7 +243,7 @@ class Project implements ClientInterface
     {
         if ($this->tasks->contains($task)) {
             $this->tasks->removeElement($task);
-            // set the owning side to null (unless already changed)
+
             if ($task->getProject() === $this) {
                 $task->setProject(null);
             }
