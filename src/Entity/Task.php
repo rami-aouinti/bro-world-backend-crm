@@ -25,28 +25,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
-        new GetCollection(
-            security: "is_granted('ROLE_TASK_LIST')"
-        ),
-        new Post(
-            security: "is_granted('ROLE_TASK_CREATE')"
-        ),
+        new GetCollection(),
+        new Post(),
         new GetCollection(
             uriTemplate: '/tasks/deadline',
             controller: TaskDeadlineAction::class,
             normalizationContext: ['groups' => ['task_read', 'read', 'is_active_read']],
-            security: "is_granted('ROLE_TASK_DEADLINE')",
             name: 'task_deadline'
         ),
-        new Get(
-            security: "is_granted('ROLE_TASK_SHOW')"
-        ),
-        new Put(
-            security: "is_granted('ROLE_TASK_UPDATE')"
-        ),
-        new Delete(
-            security: "is_granted('ROLE_TASK_DELETE')"
-        ),
+        new Get(),
+        new Put(),
+        new Delete(),
     ],
     normalizationContext: ['groups' => ['task_read', 'read', 'is_active_read']],
     denormalizationContext: ['groups' => ['task_write', 'is_active_write']],

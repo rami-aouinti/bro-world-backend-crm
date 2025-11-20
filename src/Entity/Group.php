@@ -26,19 +26,14 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['group_read_collection', 'read', 'is_active_read']],
-            security: "is_granted('ROLE_GROUP_LIST')"
         ),
         new Post(
-            security: "is_granted('ROLE_GROUP_CREATE')"
         ),
         new Get(
-            security: "is_granted('ROLE_GROUP_SHOW')"
         ),
         new Put(
-            security: "is_granted('ROLE_GROUP_UPDATE')"
         ),
         new Delete(
-            security: "is_granted('ROLE_GROUP_DELETE')"
         ),
     ],
     normalizationContext: ['groups' => ['group_read', 'read', 'is_active_read']],

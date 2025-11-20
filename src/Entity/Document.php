@@ -26,19 +26,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
-            security: "is_granted('ROLE_DOCUMENT_LIST')"
         ),
-        new Post(
-            security: "is_granted('ROLE_DOCUMENT_CREATE')"
-        ),
-        new Get(
-            security: "is_granted('ROLE_DOCUMENT_SHOW')"
-        ),
-        new Put(
-            security: "is_granted('ROLE_DOCUMENT_UPDATE')"
-        ),
+        new Post(),
+        new Get(),
+        new Put(),
         new Delete(
-            security: "is_granted('ROLE_DOCUMENT_DELETE')"
         ),
     ],
     normalizationContext: ['groups' => ['document_read', 'read', 'is_active_read']],

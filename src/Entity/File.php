@@ -24,23 +24,18 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     types: ['https://schema.org/MediaObject'],
     operations: [
         new GetCollection(
-            security: "is_granted('ROLE_FILE_LIST')"
         ),
         new Post(
             uriTemplate: '/files',
             controller: CreateFileAction::class,
-            security: "is_granted('ROLE_FILE_CREATE')",
             read: false,
             deserialize: false
         ),
         new Get(
-            security: "is_granted('ROLE_FILE_SHOW')"
         ),
         new Put(
-            security: "is_granted('ROLE_FILE_UPDATE')"
         ),
         new Delete(
-            security: "is_granted('ROLE_FILE_DELETE')"
         ),
     ],
     normalizationContext: ['groups' => ['file_read', 'read', 'is_active_read']],

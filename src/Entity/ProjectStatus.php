@@ -22,21 +22,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
-        new GetCollection(
-            security: "is_granted('ROLE_PROJECT_STATUS_LIST')"
-        ),
-        new Post(
-            security: "is_granted('ROLE_PROJECT_STATUS_CREATE')"
-        ),
-        new Get(
-            security: "is_granted('ROLE_PROJECT_STATUS_SHOW')"
-        ),
-        new Put(
-            security: "is_granted('ROLE_PROJECT_STATUS_UPDATE')"
-        ),
-        new Delete(
-            security: "is_granted('ROLE_PROJECT_STATUS_DELETE')"
-        ),
+        new GetCollection(),
+        new Post(),
+        new Get(),
+        new Put(),
+        new Delete(),
     ],
     normalizationContext: ['groups' => ['project_status_read', 'read', 'is_active_read']],
     denormalizationContext: ['groups' => ['project_status_write', 'is_active_write']],

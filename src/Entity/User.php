@@ -32,27 +32,21 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['user_read_collection', 'read', 'is_active_read']],
-            security: "is_granted('ROLE_USER_LIST')"
         ),
         new Post(
             controller: UserPostCollectionController::class,
-            security: "is_granted('ROLE_USER_CREATE')"
         ),
         new GetCollection(
             uriTemplate: '/users/dashboard',
             controller: DashboardAction::class,
-            security: "is_granted('ROLE_USER_DASHBOARD')",
             name: 'user_dashboard'
         ),
         new Get(
-            security: "is_granted('ROLE_USER_SHOW')"
         ),
         new Put(
             controller: UserPutItemController::class,
-            security: "is_granted('ROLE_USER_UPDATE')"
         ),
         new Delete(
-            security: "is_granted('ROLE_USER_DELETE')"
         ),
     ],
     normalizationContext: ['groups' => ['user_read', 'read', 'is_active_read']],

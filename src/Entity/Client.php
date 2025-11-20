@@ -39,10 +39,8 @@ use function random_bytes;
     operations: [
         new GetCollection(
             normalizationContext: ['groups' => ['client_read_collection', 'read', 'is_active_read']],
-            security: "is_granted('ROLE_CLIENT_LIST')"
         ),
         new Post(
-            security: "is_granted('ROLE_CLIENT_CREATE')"
         ),
         new Post(
             uriTemplate: '/frontend/signup',
@@ -52,19 +50,15 @@ use function random_bytes;
             name: 'client_signup'
         ),
         new Get(
-            security: "is_granted('ROLE_CLIENT_SHOW')"
         ),
         new Put(
-            security: "is_granted('ROLE_CLIENT_UPDATE')"
         ),
         new Delete(
-            security: "is_granted('ROLE_CLIENT_DELETE')"
         ),
         new Get(
             uriTemplate: '/frontend/profile/me',
             controller: ClientGetItemAction::class,
             normalizationContext: ['groups' => ['client_get_item']],
-            security: "is_granted('ROLE_CLIENT')",
             read: false,
             deserialize: false,
             name: 'client_me_get'
@@ -73,7 +67,6 @@ use function random_bytes;
             uriTemplate: '/frontend/profile/me',
             controller: ClientPutItemController::class,
             normalizationContext: ['groups' => ['client_put_item']],
-            security: "is_granted('ROLE_CLIENT')",
             validationContext: ['groups' => ['client_put_frontend']],
             name: 'client_me_put'
         ),

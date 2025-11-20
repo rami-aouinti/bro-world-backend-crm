@@ -22,19 +22,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(
-            security: "is_granted('ROLE_ROLE_LIST')"
         ),
         new Post(
-            security: "is_granted('ROLE_ROLE_CREATE')"
-        ),
+            ),
         new Get(
-            security: "is_granted('ROLE_ROLE_SHOW')"
         ),
         new Put(
-            security: "is_granted('ROLE_ROLE_UPDATE')"
         ),
         new Delete(
-            security: "is_granted('ROLE_ROLE_DELETE')"
         ),
     ],
     normalizationContext: ['groups' => ['role_read', 'read', 'is_active_read']],

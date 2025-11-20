@@ -19,16 +19,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(
-            security: "is_granted('ROLE_HISTORY_LIST')"
         ),
         new GetCollection(
             uriTemplate: '/histories/{entity}/{entityId}',
             controller: HistoryGetEntityCollectionAction::class,
             normalizationContext: ['groups' => ['history_get_entity_collection']],
-            security: "is_granted('ROLE_HISTORY_LIST')"
         ),
         new Get(
-            security: "is_granted('ROLE_HISTORY_SHOW')"
         ),
     ],
     normalizationContext: ['groups' => ['history_read']],
