@@ -6,7 +6,6 @@ use App\Entity\History;
 use App\Entity\User;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
-use Exception;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 
 class AuthenticationSuccessListener
@@ -40,7 +39,7 @@ class AuthenticationSuccessListener
         $this->em->flush();
 
         $data['roles'] = $user->getRoles();
-        $data['language'] = $user->getLanguage()->getCode();
+        $data['language'] = $user->getLanguage()?->getCode();
         $data['name'] = $user->getName();
         $data['email'] = $user->getEmail();
 
